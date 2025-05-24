@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Working Memory - Religius</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .test-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4em;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .answer-section {
+            margin-top: 30px;
+        }
+
+        .answer-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .answer-input input {
+            width: 120px;
+            padding: 8px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .results {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .results h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .countdown {
+            font-size: 2em;
+            color: #ff6b6b;
+            margin: 20px 0;
+        }
+
+        .instruction {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #2196f3;
+        }
+
+        select {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            font-size: 1.1em;
+        }
+
+        .download-info {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #4caf50;
+        }
+
+        .download-info p {
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+
+        .practice-words {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Halaman Selamat Datang -->
+        <div id="welcome-page">
+            <h1>Selamat Datang</h1>
+            <p>Halo! Terima kasih sudah bersedia mengikuti kegiatan ini.</p>
+            
+            <div class="instruction">
+                <h3>Cara Kerja Tes:</h3>
+                <p>Kegiatan ini akan terbagi menjadi 3 sesi. Kamu akan melihat beberapa kata dengan latar
+                    warna yang berbeda. Perhatikan dengan baik semua kata, setelah itu Anda akan diminta
+                    menuliskannya kembali.</p>
+                <p>• Setelah melihat semua kata, Anda akan diminta mengingat sebanyak mungkin</p>
+                <p>• Ada 3 tes dengan urutan warna yang telah ditentukan</p>
+            </div>
+            
+            <button onclick="showNameInput()">Mulai Tes</button>
+        </div>
+
+        <!-- Halaman Input Nama -->
+        <div id="name-input-page" class="hidden">
+            <h2>Masukkan Data Anda</h2>
+            <input type="text" id="participant-name" placeholder="Masukkan nama Anda">
+            <div>
+                <label for="participant-code">Pilih Kode Peserta (1-6):</label>
+                <select id="participant-code">
+                    <option value="1">Kode 1</option>
+                    <option value="2">Kode 2</option>
+                    <option value="3">Kode 3</option>
+                    <option value="4">Kode 4</option>
+                    <option value="5">Kode 5</option>
+                    <option value="6">Kode 6</option>
+                </select>
+            </div>
+            
+            <div class="instruction">
+                <h4>📝 Sebelum Memulai Tes Sesungguhnya</h4>
+                <p>Anda akan melakukan latihan terlebih dahulu dengan 5 kata sederhana untuk memahami cara kerja tes.</p>
+            </div>
+            
+            <button onclick="startPractice()">Mulai Latihan</button>
+        </div>
+
+        <!-- Halaman Latihan Jeda -->
+        <div id="practice-break-page" class="hidden">
+            <h2>Persiapan Menjawab Latihan</h2>
+            <p>Anda telah melihat 5 kata latihan. Sekarang tuliskan sebanyak mungkin kata yang Anda ingat dalam waktu 1 menit.</p>
+            <div class="countdown" id="practice-countdown">10</div>
+        </div>
+
+        <!-- Halaman Menjawab Latihan -->
+        <div id="practice-answer-page" class="hidden">
+            <h2>Tuliskan Kata Latihan yang Anda Ingat</h2>
+            <p>Tuliskan kata-kata yang Anda ingat dari latihan (maksimal 5 kata)</p>
+            <div class="answer-section">
+                <div class="answer-input" id="practice-answer-inputs"></div>
+                <button onclick="submitPracticeAnswers()">Selesai Menjawab</button>
+            </div>
+        </div>
+
+        <!-- Halaman Hasil Latihan -->
+        <div id="practice-result-page" class="hidden">
+            <h2>Hasil Latihan</h2>
+            <div class="results">
+                <div id="practice-result"></div>
+                <div class="instruction">
+                    <h4>✅ Latihan Selesai!</h4>
+                    <p>Sekarang Anda sudah memahami cara kerja tes. Selanjutnya Anda akan menghadapi tes sesungguhnya dengan 3 latar belakang warna yang berbeda.</p>
+                </div>
+                <button onclick="startRealTest()">Mulai Tes Sesungguhnya</button>
+            </div>
+        </div>
+
+        <!-- Halaman Jeda -->
+        <div id="break-page" class="hidden">
+            <h2>Persiapan Menjawab</h2>
+            <p id="break-text">Anda akan diarahkan ke halaman selanjutnya untuk menjawab berapa kata yang dihapal dari 20 kata tersebut dengan background warna <span id="current-color"></span> dalam waktu 1 menit untuk menjawab.</p>
+            <div class="countdown" id="countdown">30</div>
+        </div>
+
+        <!-- Halaman Menjawab -->
+        <div id="answer-page" class="hidden">
+            <h2>Tuliskan Kata yang Anda Ingat</h2>
+            <h2>Tanpa Sesuai dengan Urutan</h2>
+            <p>Background: <span id="answer-color"></span></p>
+            <div class="answer-section">
+                <div class="answer-input" id="answer-inputs"></div>
+                <button onclick="submitAnswers()">Selesai Menjawab</button>
+            </div>
+        </div>
+
+        <!-- Halaman Hasil -->
+        <div id="result-page" class="hidden">
+            <h2>Hasil Tes</h2>
+            <div class="results">
+                <div id="current-result"></div>
+                <button id="next-test-btn" onclick="nextTest()">Lanjutkan Tes Berikutnya</button>
+            </div>
+        </div>
+
+        <!-- Halaman Hasil Akhir -->
+        <div id="final-result-page" class="hidden">
+            <h2>Hasil Akhir Tes Working Memory</h2>
+            <div class="results" id="final-results"></div>
+            
+            <div class="download-info">
+                <h4>📊 Informasi File Excel:</h4>
+                <p>• File akan berisi ringkasan hasil dan detail jawaban</p>
+                <p>• Format: Excel (.xlsx) dengan multiple sheet</p>
+                <p>• Sheet 1: Ringkasan Hasil - Sheet 2: Detail Jawaban</p>
+            </div>
+            
+            <button onclick="downloadResults()">📥 Download Hasil Excel</button>
+            <button onclick="restartTest()">🔄 Mulai Tes Baru</button>
+        </div>
+    </div>
+
+    <!-- Halaman Tes Fullscreen -->
+    <div id="test-page" class="test-fullscreen hidden">
+        <div id="word-display"></div>
+    </div>
+
+    <script>
+        // Data kata untuk latihan
+        const practiceWords = ["diksi", "anomali", "kapsul", "lentur", "gading"];
+
+        // Data kata untuk tes berdasarkan warna background
+        const testWords = {
+            "Biru": [
+                "shalat", "zakat", "tahmid", "tilawah", "iqamah", "masjid", "mihrab", "kubah", 
+                "makam", "madrasah", "ustad", "habib", "mursyid", "muallim", "ajengan", "ikhlas", 
+                "sabar", "amanah", "tawadhu", "fathonah"
+            ],
+            "Hijau": [
+                "wudhu", "qunut", "tarawih", "tahajud", "syahadat", "langgar", "mushalla", "pesantren", 
+                "madinah", "sajadah", "dai", "faqih", "buya", "ulama", "rohani", "adil", 
+                "tabah", "syukur", "husnudzon", "qana'ah"
+            ],
+            "Putih": [
+                "doa", "dzikir", "witir", "istighfar", "i'tikaf", "pondok", "mekkah", "surau", 
+                "ka'bah", "majelis", "imam", "kyai", "marbot", "ustazah", "daiyah", "taqwa", 
+                "ridha", "adab", "akidah", "istiqamah"
+            ]
+        };
+
+        // Konfigurasi warna
+        const colors = {
+            "Putih": "#FFFFFF",
+            "Biru": "#0000FF", 
+            "Hijau": "#00FF00"
+        };
+
+        // Urutan warna berdasarkan kode peserta
+        const colorSequences = {
+            1: ["Biru", "Hijau", "Putih"],
+            2: ["Biru", "Putih", "Hijau"],
+            3: ["Hijau", "Biru", "Putih"],
+            4: ["Hijau", "Putih", "Biru"],
+            5: ["Putih", "Biru", "Hijau"],
+            6: ["Putih", "Hijau", "Biru"]
+        };
+
+        // State aplikasi
+        let currentTest = 0;
+        let currentWordIndex = 0;
+        let participantName = "";
+        let participantCode = 1;
+        let currentColorSequence = [];
+        let testResults = [];
+        let currentWords = [];
+        let answerTimer;
+        let userAnswers = [];
+        let isPracticeMode = false;
+        let practiceResult = null;
+
+        function showNameInput() {
+            document.getElementById('welcome-page').classList.add('hidden');
+            document.getElementById('name-input-page').classList.remove('hidden');
+        }
+
+        function startPractice() {
+            participantName = document.getElementById('participant-name').value.trim();
+            participantCode = parseInt(document.getElementById('participant-code').value);
+            
+            if (!participantName) {
+                alert('Silakan masukkan nama Anda');
+                return;
+            }
+
+            isPracticeMode = true;
+            currentWords = [...practiceWords];
+            currentWordIndex = 0;
+
+            document.getElementById('name-input-page').classList.add('hidden');
+            
+            // Sembunyikan container dan tampilkan halaman tes fullscreen
+            document.querySelector('.container').classList.add('hidden');
+            document.getElementById('test-page').classList.remove('hidden');
+            
+            // Set background putih untuk latihan
+            document.getElementById('test-page').style.backgroundColor = "#f0f0f0";
+            const wordDisplay = document.getElementById('word-display');
+            wordDisplay.style.color = "#333";
+
+            displayPracticeWords();
+        }
+
+        function displayPracticeWords() {
+            const wordDisplay = document.getElementById('word-display');
+            
+            if (currentWordIndex < currentWords.length) {
+                wordDisplay.textContent = currentWords[currentWordIndex];
+                currentWordIndex++;
+                setTimeout(displayPracticeWords, 1500);
+            } else {
+                // Selesai menampilkan kata latihan, ke halaman jeda latihan
+                showPracticeBreakPage();
+            }
+        }
+
+        function showPracticeBreakPage() {
+            // Sembunyikan halaman tes dan tampilkan container dengan halaman break
+            document.getElementById('test-page').classList.add('hidden');
+            document.querySelector('.container').classList.remove('hidden');
+            document.getElementById('practice-break-page').classList.remove('hidden');
+            
+            let countdown = 10;
+            const countdownEl = document.getElementById('practice-countdown');
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownEl.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    showPracticeAnswerPage();
+                }
+            }, 1000);
+        }
+
+        function showPracticeAnswerPage() {
+            document.getElementById('practice-break-page').classList.add('hidden');
+            document.getElementById('practice-answer-page').classList.remove('hidden');
+            
+            // Buat input fields untuk latihan (5 kata)
+            const inputContainer = document.getElementById('practice-answer-inputs');
+            inputContainer.innerHTML = '';
+            
+            for (let i = 0; i < 5; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Kata ${i + 1}`;
+                input.id = `practice-answer-${i}`;
+                inputContainer.appendChild(input);
+            }
+
+            // Timer 1 menit
+            answerTimer = setTimeout(() => {
+                submitPracticeAnswers();
+            }, 60000);
+        }
+
+        function submitPracticeAnswers() {
+            clearTimeout(answerTimer);
+            
+            const answers = [];
+            
+            for (let i = 0; i < 5; i++) {
+                const input = document.getElementById(`practice-answer-${i}`);
+                const answer = input && input.value.trim() ? input.value.trim() : '';
+                
+                if (answer) {
+                    answers.push(answer.toLowerCase());
+                }
+            }
+
+            // Hitung hasil latihan
+            const correctAnswers = answers.filter(answer => 
+                practiceWords.some(word => word.toLowerCase() === answer)
+            );
+            
+            practiceResult = {
+                correct: correctAnswers.length,
+                incorrect: answers.length - correctAnswers.length,
+                totalAnswered: answers.length,
+                correctWords: correctAnswers,
+                allWords: practiceWords
+            };
+
+            showPracticeResult();
+        }
+
+        function showPracticeResult() {
+            document.getElementById('practice-answer-page').classList.add('hidden');
+            document.getElementById('practice-result-page').classList.remove('hidden');
+            
+            document.getElementById('practice-result').innerHTML = `
+                <h3>Hasil Latihan</h3>
+                <div class="result-item">
+                    <span>Kata yang Ditampilkan:</span>
+                    <span>${practiceWords.join(', ')}</span>
+                </div>
+                <div class="result-item">
+                    <span>Jawaban Benar:</span>
+                    <span>${practiceResult.correct}</span>
+                </div>
+                <div class="result-item">
+                    <span>Jawaban Salah:</span>
+                    <span>${practiceResult.incorrect}</span>
+                </div>
+                <div class="result-item">
+                    <span>Total Dijawab:</span>
+                    <span>${practiceResult.totalAnswered} dari 5</span>
+                </div>
+                ${practiceResult.correctWords.length > 0 ? `
+                <div class="result-item">
+                    <span>Kata Benar yang Diingat:</span>
+                    <span>${practiceResult.correctWords.join(', ')}</span>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        function startRealTest() {
+            isPracticeMode = false;
+            currentTest = 0;
+            currentColorSequence = colorSequences[participantCode];
+            
+            document.getElementById('practice-result-page').classList.add('hidden');
+            startWordDisplay();
+        }
+
+        function startWordDisplay() {
+            const currentColor = currentColorSequence[currentTest];
+            // Ambil kata berdasarkan warna dan acak urutannya
+            currentWords = [...testWords[currentColor]].sort(() => Math.random() - 0.5);
+            currentWordIndex = 0;
+
+            // Sembunyikan container dan tampilkan halaman tes fullscreen
+            document.querySelector('.container').classList.add('hidden');
+            document.getElementById('test-page').classList.remove('hidden');
+            
+            // Set background dan warna teks
+            document.getElementById('test-page').style.backgroundColor = colors[currentColor];
+            const wordDisplay = document.getElementById('word-display');
+            wordDisplay.style.color = currentColor === "Putih" ? "#000" : "#FFF";
+
+            displayNextWord();
+        }
+
+        function displayNextWord() {
+            const wordDisplay = document.getElementById('word-display');
+            
+            if (currentWordIndex < currentWords.length) {
+                wordDisplay.textContent = currentWords[currentWordIndex];
+                currentWordIndex++;
+                setTimeout(displayNextWord, 1500);
+            } else {
+                // Selesai menampilkan kata, ke halaman jeda
+                showBreakPage();
+            }
+        }
+
+        function showBreakPage() {
+            const currentColor = currentColorSequence[currentTest];
+            
+            // Sembunyikan halaman tes dan tampilkan container dengan halaman break
+            document.getElementById('test-page').classList.add('hidden');
+            document.querySelector('.container').classList.remove('hidden');
+            document.getElementById('break-page').classList.remove('hidden');
+            document.getElementById('current-color').textContent = currentColor;
+            
+            let countdown = 30;
+            const countdownEl = document.getElementById('countdown');
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownEl.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    showAnswerPage();
+                }
+            }, 1000);
+        }
+
+        function showAnswerPage() {
+            const currentColor = currentColorSequence[currentTest];
+            document.getElementById('break-page').classList.add('hidden');
+            document.getElementById('answer-page').classList.remove('hidden');
+            document.getElementById('answer-color').textContent = currentColor;
+            
+            // Buat input fields
+            const inputContainer = document.getElementById('answer-inputs');
+            inputContainer.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Kata ${i + 1}`;
+                input.id = `answer-${i}`;
+                inputContainer.appendChild(input);
+            }
+
+            // Timer 1 menit
+            answerTimer = setTimeout(() => {
+                submitAnswers();
+            }, 60000);
+        }
+
+        function submitAnswers() {
+            clearTimeout(answerTimer);
+            
+            const answers = [];
+            const detailedAnswers = [];
+            
+            for (let i = 0; i < 20; i++) {
+                const input = document.getElementById(`answer-${i}`);
+                const answer = input && input.value.trim() ? input.value.trim() : '';
+                
+                if (answer) {
+                    answers.push(answer.toLowerCase());
+                }
+                
+                // Simpan semua jawaban termasuk yang kosong untuk detail
+                detailedAnswers.push({
+                    nomor: i + 1,
+                    jawaban: answer,
+                    benar: answer ? (currentWords.some(word => word.toLowerCase() === answer.toLowerCase()) ? 'Ya' : 'Tidak') : '-'
+                });
+            }
+
+            // Hitung hasil
+            const correctAnswers = answers.filter(answer => 
+                currentWords.some(word => word.toLowerCase() === answer)
+            );
+            
+            const result = {
+                test: currentTest + 1,
+                color: currentColorSequence[currentTest],
+                correct: correctAnswers.length,
+                incorrect: answers.length - correctAnswers.length,
+                totalAnswered: answers.length,
+                correctWords: correctAnswers,
+                allWords: currentWords,
+                detailedAnswers: detailedAnswers
+            };
+
+            testResults.push(result);
+            userAnswers.push(detailedAnswers);
+            showResult(result);
+        }
+
+        function showResult(result) {
+            document.getElementById('answer-page').classList.add('hidden');
+            document.getElementById('result-page').classList.remove('hidden');
+            
+            document.getElementById('current-result').innerHTML = `
+                <h3>Hasil Tes ${result.test} (Background ${result.color})</h3>
+                <div class="result-item">
+                    <span>Jawaban Benar:</span>
+                    <span>${result.correct}</span>
+                </div>
+                <div class="result-item">
+                    <span>Jawaban Salah:</span>
+                    <span>${result.incorrect}</span>
+                </div>
+                <div class="result-item">
+                    <span>Total Dijawab:</span>
+                    <span>${result.totalAnswered} dari 20</span>
+                </div>
+            `;
+
+            const nextBtn = document.getElementById('next-test-btn');
+            if (currentTest < 2) {
+                nextBtn.style.display = 'block';
+                nextBtn.textContent = 'Lanjutkan Tes Berikutnya';
+            } else {
+                nextBtn.style.display = 'block';
+                nextBtn.textContent = 'Lihat Hasil Akhir';
+                nextBtn.onclick = showFinalResults;
+            }
+        }
+
+        function nextTest() {
+            currentTest++;
+            document.getElementById('result-page').classList.add('hidden');
+            startWordDisplay();
+        }
+
+        function showFinalResults() {
+            document.getElementById('result-page').classList.add('hidden');
+            document.getElementById('final-result-page').classList.remove('hidden');
+            
+            let finalHtml = `<h3>Hasil Lengkap - ${participantName} (Kode ${participantCode})</h3>`;
+            let totalCorrect = 0;
+            let totalAnswered = 0;
+
+            // Tambahkan hasil latihan jika ada
+            if (practiceResult) {
+                finalHtml += `
+                    <div class="result-item" style="background: #fff3cd;">
+                        <span>Latihan:</span>
+                        <span>${practiceResult.correct} benar dari ${practiceResult.totalAnswered} jawaban</span>
+                    </div>
+                `;
+            }
+
+            testResults.forEach((result, index) => {
+                totalCorrect += result.correct;
+                totalAnswered += result.totalAnswered;
+                
+                finalHtml += `
+                    <div class="result-item">
+                        <span>Tes ${index + 1} (${result.color}):</span>
+                        <span>${result.correct} benar dari ${result.totalAnswered} jawaban</span>
+                    </div>
+                `;
+            });
+
+            finalHtml += `
+                <div class="result-item" style="background: #e8f5e8; font-weight: bold;">
+                    <span>Total Keseluruhan:</span>
+                    <span>${totalCorrect} benar dari ${totalAnswered} jawaban</span>
+                </div>
+            `;
+
+            document.getElementById('final-results').innerHTML = finalHtml;
+        }
+
+        function downloadResults() {
+            // Membuat workbook baru
+            const wb = XLSX.utils.book_new();
+            
+            // Sheet 1: Ringkasan Hasil
+            const summaryData = [
+                ['HASIL TES WORKING MEMORY'],
+                [''],
+                ['Nama Peserta:', participantName],
+                ['Kode Peserta:', participantCode],
+                ['Tanggal Tes:', new Date().toLocaleDateString('id-ID')],
+                ['Waktu Tes:', new Date().toLocaleTimeString('id-ID')],
+                ['']
+            ];
+
+            // Tambahkan hasil latihan jika ada
+            if (practiceResult) {
+                summaryData.push(
+                    ['HASIL LATIHAN'],
+                    ['Jawaban Benar:', practiceResult.correct],
+                    ['Jawaban Salah:', practiceResult.incorrect],
+                    ['Total Dijawab:', practiceResult.totalAnswered],
+                    ['']
+                );
+            }
+
+            summaryData.push(
+                ['RINGKASAN HASIL PER TES'],
+                ['Tes', 'Warna Background', 'Jawaban Benar', 'Jawaban Salah', 'Total Dijawab', 'Persentase Benar']
+            );
+
+            let totalCorrect = 0;
+            let totalAnswered = 0;
+
+            testResults.forEach((result, index) => {
+                const percentage = result.totalAnswered > 0 ? 
+                    ((result.correct / result.totalAnswered) * 100).toFixed(1) + '%' : '0%';
+                
+                summaryData.push([
+                    `Tes ${result.test}`,
+                    result.color,
+                    result.correct,
+                    result.incorrect, 
+                    result.totalAnswered,
+                    percentage
+                ]);
+
+                totalCorrect += result.correct;
+                totalAnswered += result.totalAnswered;
+            });
+
+            // Tambahkan total keseluruhan
+            const overallPercentage = totalAnswered > 0 ? 
+                ((totalCorrect / totalAnswered) * 100).toFixed(1) + '%' : '0%';
+            
+            summaryData.push(
+                [''],
+                ['TOTAL KESELURUHAN', '', totalCorrect, totalAnswered - totalCorrect, totalAnswered, overallPercentage]
+            );
+
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            
+            // Set lebar kolom untuk sheet ringkasan
+            summarySheet['!cols'] = [
+                {wch: 15}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 18}
+            ];
+
+            XLSX.utils.book_append_sheet(wb, summarySheet, 'Ringkasan Hasil');
+
+            // Sheet untuk hasil latihan jika ada
+            if (practiceResult) {
+                const practiceData = [
+                    ['DETAIL HASIL LATIHAN'],
+                    [''],
+                    ['KATA-KATA YANG DITAMPILKAN:'],
+                    [practiceResult.allWords.join(', ')],
+                    [''],
+                    ['STATISTIK:'],
+                    ['Total Kata Ditampilkan:', 5],
+                    ['Total Dijawab:', practiceResult.totalAnswered],
+                    ['Jawaban Benar:', practiceResult.correct],
+                    ['Jawaban Salah:', practiceResult.incorrect],
+                    ['Tidak Dijawab:', 5 - practiceResult.totalAnswered],
+                    [''],
+                    ['KATA BENAR YANG DIINGAT:'],
+                    [practiceResult.correctWords.join(', ') || 'Tidak ada']
+                ];
+
+                const practiceSheet = XLSX.utils.aoa_to_sheet(practiceData);
+                practiceSheet['!cols'] = [{wch: 25}, {wch: 30}];
+                XLSX.utils.book_append_sheet(wb, practiceSheet, 'Hasil Latihan');
+            }
+
+            // Sheet 2: Detail Jawaban per Tes
+            testResults.forEach((result, testIndex) => {
+                const detailData = [
+                    [`DETAIL JAWABAN TES ${result.test} - BACKGROUND ${result.color.toUpperCase()}`],
+                    [''],
+                    ['KATA-KATA YANG DITAMPILKAN:'],
+                    [result.allWords.join(', ')],
+                    [''],
+                    ['JAWABAN PESERTA:'],
+                    ['No.', 'Jawaban', 'Status', 'Keterangan']
+                ];
+
+                result.detailedAnswers.forEach(detail => {
+                    let keterangan = '';
+                    if (detail.jawaban === '') {
+                        keterangan = 'Tidak dijawab';
+                    } else if (detail.benar === 'Ya') {
+                        keterangan = 'Jawaban benar';
+                    } else {
+                        keterangan = 'Tidak ada dalam daftar kata';
+                    }
+
+                    detailData.push([
+                        detail.nomor,
+                        detail.jawaban || '(kosong)',
+                        detail.benar,
+                        keterangan
+                    ]);
+                });
+
+                // Tambahkan statistik di bawah
+                detailData.push(
+                    [''],
+                    ['STATISTIK:'],
+                    ['Total Kata Ditampilkan:', 20],
+                    ['Total Dijawab:', result.totalAnswered],
+                    ['Jawaban Benar:', result.correct],
+                    ['Jawaban Salah:', result.incorrect],
+                    ['Tidak Dijawab:', 20 - result.totalAnswered]
+                );
+
+                const detailSheet = XLSX.utils.aoa_to_sheet(detailData);
+                
+                // Set lebar kolom untuk sheet detail
+                detailSheet['!cols'] = [
+                    {wch: 5}, {wch: 20}, {wch: 10}, {wch: 25}
+                ];
+
+                XLSX.utils.book_append_sheet(wb, detailSheet, `Detail Tes ${result.test}`);
+            });
+
+            // Download file Excel
+            const fileName = `Hasil_Working_Memory_${participantName}_${new Date().getTime()}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+
+            // Tampilkan notifikasi sukses
+            alert(`File Excel "${fileName}" berhasil diunduh!\n\nFile berisi:\n• Sheet Ringkasan Hasil\n${practiceResult ? '• Sheet Hasil Latihan\n' : ''}• Sheet Detail setiap tes`);
+        }
+
+        function restartTest() {
+            // Reset semua state
+            currentTest = 0;
+            currentWordIndex = 0;
+            participantName = "";
+            participantCode = 1;
+            currentColorSequence = [];
+            testResults = [];
+            currentWords = [];
+            userAnswers = [];
+            isPracticeMode = false;
+            practiceResult = null;
+            
+            // Tampilkan container dan halaman welcome
+            document.getElementById('test-page').classList.add('hidden');
+            document.querySelector('.container').classList.remove('hidden');
+            
+            // Sembunyikan semua halaman kecuali welcome
+            document.querySelectorAll('.container > div').forEach(div => {
+                div.classList.add('hidden');
+            });
+            document.getElementById('welcome-page').classList.remove('hidden');
+            
+            // Reset form
+            document.getElementById('participant-name').value = '';
+            document.getElementById('participant-code').value = '1';
+        }
+    </script>
+</body>
+</html>
