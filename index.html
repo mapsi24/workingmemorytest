@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -517,14 +516,18 @@
             `;
         }
 
+
         function startRealTest() {
             isPracticeMode = false;
-            currentTest = 0;
+            currentTest = 0; // Reset ke tes pertama
             currentColorSequence = colorSequences[participantCode];
+            testResults = []; // Reset hasil tes sebelumnya
+            userAnswers = []; // Reset jawaban pengguna
             
             document.getElementById('practice-result-page').classList.add('hidden');
             startWordDisplay();
         }
+        
 
         function startWordDisplay() {
             const currentColor = currentColorSequence[currentTest];
@@ -876,6 +879,7 @@
             alert(`File Excel "${fileName}" berhasil diunduh!\n\nFile berisi:\n• Sheet Ringkasan Hasil\n${practiceResult ? '• Sheet Hasil Latihan\n' : ''}• Sheet Detail setiap tes`);
         }
 
+        
         function restartTest() {
             // Reset semua state
             currentTest = 0;
@@ -902,7 +906,12 @@
             // Reset form
             document.getElementById('participant-name').value = '';
             document.getElementById('participant-code').value = '1';
+            
+            // Reset state tombol next-test-btn
+            const nextBtn = document.getElementById('next-test-btn');
+            nextBtn.onclick = nextTest; // Kembalikan ke fungsi default
         }
+        
     </script>
 </body>
 </html>
